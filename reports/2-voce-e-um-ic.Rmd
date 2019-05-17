@@ -20,7 +20,6 @@ theme_set(theme_bw())
 ```
 
 ## Os dados
-
 ```{r}
 set.seed(12345)
 
@@ -35,11 +34,30 @@ lastfm = lastfm %>%
 glimpse(lastfm)
 ```
 
+```{r}
+mainstream <- lastfm %>%
+    filter(mediana_pop > 5) %>%
+        select(news, mediana_pop)
+
+glimpse(mainstream)
+```
+
 ## Proporção de artistas novos e popularidade
 
 Utilizaremos ICs para estimar duas métricas sobre os usuários do LastFM em geral durante um período de 6 meses. Em ambos os casos faremos isso a partir de uma amostra de 300 usuários. As duas métricas são: 
 
 1. Qual a proporção de novos artistas em geral escutada por usuários?
-2. Para os usuários que gostam de música muito pop (mediana_pop > 5), qual a correlação entre a popularidade mediana dos artistas escutado e a proporção dos artistas escutados que eram novos. 
+```{r}
+lastfm %>%
+    summarise(media = mean(news))
+```
+
+
+2. Para os usuários que gostam de música muito pop (mediana_pop > 5), qual a correlação entre a popularidade mediana dos artistas escutado e a proporção dos artistas escutados que eram novos.
+```{r}
+lastfm %>%
+    summarise(media = mean(mediana_pop))
+```
+
 
 Crie intervalos com 95% de confiança.
