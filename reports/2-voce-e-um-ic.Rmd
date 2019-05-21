@@ -85,8 +85,8 @@ reamostragens %>%
 ```{r}
 intervalo = reamostragens %>% 
   mutate(erro = theta_c_s - theta_c) %>% 
-  summarise(erro_i = quantile(erro, .05), 
-            erro_s = quantile(erro, .95))
+  summarise(erro_i = quantile(erro, .025), 
+            erro_s = quantile(erro, .975))
 
 intervalo
 ```
