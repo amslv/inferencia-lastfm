@@ -132,30 +132,27 @@ ci
   Portanto, é posível verificar que existe uma confiança de **95%** ao se afirmar que a proporção de novos artistas escutados por usuários é de `0.2423`.
 
 
-## Para os usuários que gostam de música muito pop (mediana_pop > 5), qual a correlação entre a popularidade mediana dos artistas escutado e a proporção dos artistas escutados que eram novos.
+## Correlação entre usuários que ouvem muita música pop e a quantidade de artistas novos inseridos na biblioteca.
 
-### Implementação Manual do Bootstrap
+### Implementação Manual
 
 ```{r}
-theta_correlacao_mainstream <- function(df){
-    mean(
-        (
-          df %>%
-            filter (mediana_pop > 5) %>%
-            mutate(prp_pop = news/(news + old),
-               correlacao_pop = cor(mediana_pop, prp_pop)
-               )
-          )
-        $correlacao_pop
-        )
+theta_cor_mstream <- function(df)
+{
+    mean((df %>%
+          filter (mediana_pop > 5) %>%
+          mutate(prop_pop = news/(news + old),
+          correlacao_pop = cor(mediana_pop, prop_pop)))$correlacao_pop)
 }
-theta_c_main <- theta_correlacao_mainstream(lastfm)
+theta_c_mstream <- theta_cor_mstream(lastfm)
 ```
 
 ```{r}
-repeticoes_crl_pop = 4000 
-bootstrap_amostra_mainstream <- function(df)
-  {
+repeticoes_crl_pop = 4000
+
+
+bootstrap_ams_mainstream <- function(df)
+{
     correlacao_pop = (
       df %>%
         filter (mediana_pop > 5) %>%
@@ -169,23 +166,25 @@ bootstrap_amostra_mainstream <- function(df)
                    replace = TRUE)
   return(mean(boot_mstream))
 }
+
 set.seed(1212)
 
 reamostragens_mainstream = tibble(i = 1:repeticoes_crl_pop) %>% 
-  mutate(theta_c_s_mstream = map_dbl(i, ~ bootstrap_amostra_mainstream(lastfm)))
+  mutate(theta_c_s_mstream = map_dbl(i, ~ bootstrap_ams_mainstream(lastfm)))
+
 reamostragens_mainstream
 ```
 
 ```{r}
 intervalo_mstream = reamostragens_mainstream %>% 
-  mutate(erro = theta_c_s_mstream - theta_c_main) %>% 
+  mutate(erro = theta_c_s_mstream - theta_c_mstream) %>% 
   summarise(erro_i_pop = quantile(erro, .05), 
             erro_s_pop = quantile(erro, .95))
 
 
 intervalo_mstream = intervalo_mstream %>% 
-  mutate(valor_i_pop = theta_c_main + erro_i_pop, 
-         valor_s_pop = theta_c_main + erro_s_pop)
+  mutate(valor_i_pop = theta_c_mstream + erro_i_pop, 
+         valor_s_pop = theta_c_mstream + erro_s_pop)
 
 
 intervalo_mstream
@@ -205,7 +204,7 @@ theta_mstream <- function(df,i)
 }
 
 booted_mstream <- boot(data = lastfm,
-                       statistic = theta,
+                       statistic = theta_mstream,
                        R = 4000)
 
 ci_mstream = tidy(booted_mstream, 
@@ -219,3 +218,7 @@ ci_mstream
 
 
 ### Análise
+
+ O valor do $\hat{\theta}$ obtido através da implementação manual do Bootstrap foi de `-0.05679804` e o obtido por meio da utilização da biblioteca `boot` foi `-0.05679804`. Ao observar os valores exibidos anteriormente, é possível considerá-los iguais, levando em consideração arredondamentos.
+   Em relação aos intervalos de confiança, foram obtidos os seguintes conjuntos de valores: `[-0.05679804;-0.05679804]` e `[-0.1823435;0.06322563]` que se referem a implementação manual e a utilização da biblioteca de bootstraping, respectivamente.
+  Portanto, é posível verificar que existe uma confiança de **95%** ao se afirmar que a proporção da popularidade média dos artistas escutados e dos artistas novos adicionados a biblioteca  é de `-0.05679804`. A correlação é negativa e fraca.
